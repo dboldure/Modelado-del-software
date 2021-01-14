@@ -1,0 +1,88 @@
+package JUnitPruebasSA;
+
+import static org.junit.Assert.*;
+
+
+import org.junit.Before;
+import org.junit.Test;
+
+import Negocio.Departamento.SADepartamento;
+import Negocio.Departamento.TDepartamento;
+import Negocio.Empleado.SAEmpleado;
+import Negocio.FactoriaSA.FactoriaSA;
+
+//Suponemos que los metodos se ejecutan en orden y con la base de datos vacia antes de empezar
+
+public class JUnitSADepartamento {
+	
+	FactoriaSA factoria;
+	SADepartamento sadepartamento;
+	SAEmpleado saempleado;
+	
+	@Before
+	public void start(){
+		 factoria = FactoriaSA.getInstancia();
+		 sadepartamento = factoria.generaSADepartamento();
+		 saempleado = factoria.generaSAEmpleado();
+	}
+	
+
+	@Test
+	public void testAltaDepartamento() {
+		
+		TDepartamento departamentoCorrecto1 = new TDepartamento("Inteligencia Artificial", "643559857", true);
+		TDepartamento departamentoCorrecto2 = new TDepartamento("Videojuegos", "677777857", true);
+		TDepartamento departamentoNulo = null;
+		TDepartamento departamentoRepetido = new TDepartamento("Inteligencia Artificial", "666876524", true);
+		
+		assertTrue("Departamento insertado correctamente",sadepartamento.alta(departamentoCorrecto1) > 0);
+		assertTrue("Departamento insertado correctamente",sadepartamento.alta(departamentoCorrecto2) > 0);
+		assertTrue("Departamento nulo",sadepartamento.alta(departamentoNulo)== -1);
+		assertTrue("El departamento ya esta dado de alta",sadepartamento.alta(departamentoRepetido) ==-3);
+	
+	}
+	
+	@Test
+	public void testMostrarDepartamento() {
+		
+		assertNull("Id no válido",sadepartamento.mostrar(-1));
+		assertNull("Departamento nulo",sadepartamento.mostrar(8888));
+	    assertNotNull("Departamento activo", sadepartamento.mostrar(1));
+		
+	}
+	
+	@Test
+	public void testModificarDepartamento() {
+		
+		TDepartamento departamentoCorrecto = new TDepartamento(1,"Inteligencia Artificial 2", "643559857", true);
+		TDepartamento departamentoNulo = null;
+		TDepartamento departamentoNoExistente = new TDepartamento(3,"Informatica", "666536524", true);
+		
+		assertTrue("Departamento activo",sadepartamento.modificar(departamentoCorrecto) > 0);
+		assertTrue("Departamento es null",sadepartamento.modificar(departamentoNulo)== -1);
+		assertTrue("Departamento no existente",sadepartamento.modificar(departamentoNoExistente) ==-2);
+	}
+
+	@Test
+	public void testBajaDepartamento() {
+		
+		assertTrue("Departamento activo",sadepartamento.baja(2) > 0);
+		assertTrue("Departamento no existente",sadepartamento.baja(5) ==-1);
+	}
+	
+
+	@Test
+	public void testListarDepartamentos() {
+		assertTrue("Listar no vacia",sadepartamento.listar()!=null);
+
+	}
+	
+	@Test
+	public void testNominaDepartamento() {
+		
+		assertTrue("Lista no vacia con departamento existente",sadepartamento.calcularNominaPorDepartamento(1) >= 0);
+		assertTrue("Departamento no existente",sadepartamento.calcularNominaPorDepartamento(55)==-1);
+
+	}
+	
+}

@@ -1,0 +1,148 @@
+package JUnitPruebasSA;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import Negocio.Departamento.SADepartamento;
+import Negocio.Departamento.TDepartamento;
+import Negocio.FactoriaSA.FactoriaSA;
+import Negocio.Planta.SAPlanta;
+import Negocio.Planta.TPlanta;
+
+
+// Suponemos que los metodos se ejecutan en orden y con la base de datos vacia antes de empezar
+
+public class JUnitSAPlanta {
+	FactoriaSA factoria;
+	SAPlanta saplanta;
+	SADepartamento sadepartamento;
+	
+	@Before
+	public void start(){
+		 factoria = FactoriaSA.getInstancia();
+		 saplanta = factoria.generaSAPlanta();
+		 sadepartamento = factoria.generaSADepartamento();
+	}
+	
+
+	@Test
+	public void testAltaPlanta() {
+		
+		TPlanta plantaCorrecta1 = new TPlanta(1, true);
+		TPlanta plantaCorrecta2 = new TPlanta(2, true);
+		TPlanta plantaCorrecta3 = new TPlanta(3, true);
+		TPlanta plantaNulo = null;
+		TPlanta plantaRepetida = new TPlanta(1, true);
+		
+		assertTrue("Planta insertada correctamente",saplanta.alta(plantaCorrecta1) > 0);
+		assertTrue("Planta insertada correctamente",saplanta.alta(plantaCorrecta2) > 0);
+		assertTrue("Planta insertada correctamente",saplanta.alta(plantaCorrecta3) > 0);
+		assertTrue("Planta nula",saplanta.alta(plantaNulo)== -1);
+		assertTrue("La planta ya esta dada de alta",saplanta.alta(plantaRepetida) ==-3);
+	
+	}
+	
+	@Test
+	public void testMostrarPlanta() {
+		
+		assertNull("Id no válido",saplanta.mostrar(-1));
+		assertNull("Planta no existe",saplanta.mostrar(10));
+	    assertNotNull("Planta activa", saplanta.mostrar(1));
+		
+	}
+	
+	@Test
+	public void testBajaPlanta() {
+		
+		TDepartamento departamento = new TDepartamento("Dep 1", "643559857", true); 
+		sadepartamento.alta(departamento);  // Suponemos id = 1
+		
+		assertTrue("Planta activa",saplanta.baja(2) > 0);
+		assertTrue("Planta no existente",saplanta.baja(5) == -3);
+		assertTrue("Planta no activa",saplanta.baja(2) == -2);
+		
+		saplanta.vincularDepartamentoaLaPlanta(1, 1, 1f);
+		
+		assertTrue("Planta tiene departamentos",saplanta.baja(1) == -1);
+		
+		saplanta.desvincularDepartamentoaLaPlanta(1, 1);
+		
+	}
+	
+	@Test
+	public void testVincularDepartamento() {
+		
+		assertTrue("Vinculados",saplanta.vincularDepartamentoaLaPlanta(1, 1, 1f) > 0);
+		assertTrue("Ya estan vinculados",saplanta.vincularDepartamentoaLaPlanta(1, 1, 1f) == -7);
+		
+		saplanta.desvincularDepartamentoaLaPlanta(1, 1);
+		
+		assertTrue("Parametros null",saplanta.vincularDepartamentoaLaPlanta(null, null, null) == -1);
+		assertTrue("Metros no válidos",saplanta.vincularDepartamentoaLaPlanta(1, 1, -1f) == -2);
+		
+		assertTrue("Planta no existente",saplanta.vincularDepartamentoaLaPlanta(5, 1, 1f) == -3);
+		assertTrue("Planta no activa",saplanta.vincularDepartamentoaLaPlanta(2, 1, 1f) == -4);
+		
+		sadepartamento.baja(1);
+		
+		assertTrue("Departamento no existente",saplanta.vincularDepartamentoaLaPlanta(1, 5, 1f) == -5);
+		assertTrue("Departamento no activo",saplanta.vincularDepartamentoaLaPlanta(1, 1, 1f) == -6);
+		
+		TDepartamento departamento = new TDepartamento("Dep 1", "643559857", true); 
+		sadepartamento.alta(departamento);  // Suponemos id = 1
+		
+	}
+	
+	@Test
+	public void testModificarPlanta() {
+		
+		TPlanta plantaCorrecta = new TPlanta(3, 5, true);
+		TPlanta plantaNula = null;
+		TPlanta plantaYaExistente = new TPlanta(1, 5, true);
+		TPlanta plantaNoActiva = new TPlanta(2, 2, false);
+		TPlanta plantaNoExistente = new TPlanta(8, 8, true);
+		
+		assertTrue("Planta activa",saplanta.modificar(plantaCorrecta) > 0);
+		assertTrue("Planta es null",saplanta.modificar(plantaNula)== -1);
+		assertTrue("Planta ya existente",saplanta.modificar(plantaYaExistente) ==-2);
+		assertTrue("Planta ya existente",saplanta.modificar(plantaNoActiva) ==-3);
+		assertTrue("Planta no existente",saplanta.modificar(plantaNoExistente) ==-4);
+		
+	}
+
+	
+	
+	@Test
+	public void testDesvincularDepartamento() {
+		
+		assertTrue("Parametros null",saplanta.desvincularDepartamentoaLaPlanta(null, null) == -1);
+		
+		assertTrue("Planta no existente",saplanta.desvincularDepartamentoaLaPlanta(8, 1) == -2);
+		assertTrue("Planta no activa",saplanta.desvincularDepartamentoaLaPlanta(2, 1) == -3);
+		
+		
+		sadepartamento.baja(1);
+		
+		assertTrue("Departamento no existente",saplanta.desvincularDepartamentoaLaPlanta(1, 8) == -4);
+		assertTrue("Departamento no activo",saplanta.desvincularDepartamentoaLaPlanta(1, 1) == -5);
+		
+		TDepartamento departamento = new TDepartamento("Dep 1", "643559857", true); 
+		sadepartamento.alta(departamento); // Suponemos id = 1
+		saplanta.vincularDepartamentoaLaPlanta(1, 1, 1f);
+		
+		assertTrue("Desvinculados",saplanta.desvincularDepartamentoaLaPlanta(1, 1) > 0);
+		assertTrue("No estan vinculados",saplanta.desvincularDepartamentoaLaPlanta(1, 1) == -6);
+		
+	}
+
+	@Test
+	public void testListarDepartamentos() {
+		assertTrue("Listar no vacia",saplanta.listar()!=null);
+	}
+	
+	
+}

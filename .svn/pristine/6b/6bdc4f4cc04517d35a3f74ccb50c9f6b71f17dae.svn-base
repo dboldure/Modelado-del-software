@@ -1,0 +1,88 @@
+package JUnitPruebasSA;
+
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import Negocio.Departamento.SADepartamento;
+import Negocio.Empleado.SAEmpleado;
+import Negocio.Empleado.TEmpleado;
+import Negocio.Empleado.TEmpleadoCompleto;
+import Negocio.Empleado.TEmpleadoParcial;
+import Negocio.FactoriaSA.FactoriaSA;
+
+//Suponemos que los metodos se ejecutan en orden y con la base de datos vacia antes de empezar
+
+public class JUnitSAEmpleado {
+
+	FactoriaSA factoria;
+	SAEmpleado saempleado;
+	SADepartamento sadepartamento;
+	
+	@Before
+	public void start(){
+		factoria = FactoriaSA.getInstancia();
+		saempleado = factoria.generaSAEmpleado();
+		sadepartamento = factoria.generaSADepartamento();
+	}
+	
+	@Test
+	public void testAltaEmpleado(){
+		TEmpleado empleadoCorrecto1 = new TEmpleadoCompleto(01,"Juan",true,"65842566T","549854126",950.0f,1,20);
+		TEmpleado empleadoCorrecto2 = new TEmpleadoParcial(02,"Pedro",true,"48367589H","975130025",1150.0f,1,6);
+		TEmpleado departamentoNulo = new TEmpleadoCompleto(03,"Luis",false,"45621875L","579021065",1075.0f,null, 20);
+		TEmpleado empleadoNulo = null;
+		TEmpleado empleadoDniRepetido = new TEmpleadoCompleto(04,"Pablo",true,"48367589H","548020156",1050.0f,1, 20);
+		TEmpleado departamentoNoExiste = new TEmpleadoCompleto(05,"Carla",true,"65445800P","458787987",1150.0f,33, 20);
+		
+		assertTrue("Empleado insertado correctamente",saempleado.alta(empleadoCorrecto1) > 0);
+		assertTrue("Empleado insertado correctamente",saempleado.alta(empleadoCorrecto2) > 0);
+		assertTrue("Departamento nulo",saempleado.alta(departamentoNulo) == -1);
+		assertTrue("Empleado nulo",saempleado.alta(empleadoNulo) == -1);
+		assertTrue("Dni ya existente",saempleado.alta(empleadoDniRepetido) == -3);
+		assertTrue("Departamento no existe",saempleado.alta(departamentoNoExiste) == -2);
+	}
+	
+	@Test
+	public void testBajaEmpleado(){
+		assertTrue("Empleado no existente",saempleado.baja(10) == -2);
+		assertTrue("Empleado no activo",saempleado.baja(03) == -3);
+		assertTrue("Empleado activo",saempleado.baja(01) > 0);
+	}
+	
+	@Test
+	public void testListarEmpleado(){
+		assertTrue("Listar no vacia",saempleado.listar()!=null);
+	}
+	
+	@Test
+	public void testMostrarEmpleado(){
+		assertNull("Empleado no existe",saempleado.mostrar(-1));
+		assertNotNull("Empleado activo",saempleado.mostrar(1));
+	}
+	
+	@Test
+	public void testModificarEmpleado(){
+		
+		TEmpleado empleadoCorrecto = new TEmpleadoCompleto(01,"Juan",true,"65842566T","648972002",950.0f,1,20);
+		TEmpleado empleadoNulo = null;
+		TEmpleado empleadoNoExiste = new TEmpleadoCompleto(06,"Juan",true,"65842566T","648972002",950.0f,1,20);
+		TEmpleado empleadoNoActivo = new TEmpleadoCompleto(03,"Luis",false,"45621875L","579021065",1075.0f,1,20);
+		TEmpleado departamentoNoExiste = new TEmpleadoCompleto(01,"Juan",true,"65842566T","648972002",950.0f,80,20);
+		TEmpleado empleadoDniExistente = new TEmpleadoCompleto(02,"Pedro",true,"65842566T","975130025",1150.0f,1,20);
+		
+		assertTrue("Empleado activo",saempleado.modificar(empleadoCorrecto) > 0);
+		assertTrue("Empleado nulo",saempleado.modificar(empleadoNulo) == -1);
+		assertTrue("Empleado no existe",saempleado.modificar(empleadoNoExiste) == -2);
+		assertTrue("Empleado no activo",saempleado.modificar(empleadoNoActivo) == -3);
+		assertTrue("Departamento no existe",saempleado.modificar(departamentoNoExiste) == -4);
+		assertTrue("Dni ya existente",saempleado.modificar(empleadoDniExistente) == -5);
+	}
+	
+	@Test
+	public void testMostrarNomina(){
+		assertTrue("Nomina empleado", saempleado.mostrarNomina(2) >= 0);
+		assertTrue("Empleado no existe", saempleado.mostrarNomina(10) == -1);
+	}
+}
